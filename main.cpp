@@ -1,14 +1,17 @@
 #include <iostream>
-
 #include <cstring>
 #include <getopt.h>
+#include <opencv2/opencv.hpp>
+
+#include "SeamCarver.h"
 
 using namespace std;
+using namespace cv;
 
 enum class Energy { gradient, dualGradient };
 static constexpr char gradientStr[] = "gradient";
-static constexpr char dualGradientStr[] = "dualGradient";
 
+static constexpr char dualGradientStr[] = "dualGradient";
 void printArgparse(bool vertical, int seams, const Energy &energy);
 
 int main(int argc, char *argv[]) {
@@ -36,7 +39,7 @@ int main(int argc, char *argv[]) {
       seams = std::stoi(optarg);
       if (seams < 0) {
         std::cerr << "-s requires positive integers." << std::endl;
-        return 1;
+        abort();
       }
       break;
     case 'e':
@@ -47,7 +50,7 @@ int main(int argc, char *argv[]) {
       } else {
         std::cerr << "Unknown energy option " << optarg << ". Try "
                   << std::endl;
-        return 1;
+        abort();
       }
       break;
     case '?':
@@ -63,9 +66,14 @@ int main(int argc, char *argv[]) {
 
   for (index = optind; index < argc; index++) {
     if (logging) {
-      std::cout << "Processing " << argv[index] << std::endl;
+      char *path = argv[index];
+      std::cout << "Processing " << path << std::endl;
+      Mat im = imread(path);
+      SeamCarver seamCarver(im);
+      seamCarver.reduce(seams);
+      seamCarver.showImage();
+      seamCarver.writeImage(format("%s-out-%d.png", path, seams));
     }
-
   }
 
   return 0;

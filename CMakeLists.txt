@@ -3,6 +3,9 @@ project(seamcarving)
 
 set(CMAKE_CXX_STANDARD 17)
 
-include_directories(/usr/local/include/opencv4)
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
 
-add_executable(seamcarving main.cpp)
+add_executable(seamcarving main.cpp SeamCarver.cpp)
+
+target_link_libraries( seamcarving ${OpenCV_LIBS} )
