@@ -9,21 +9,21 @@ using namespace cv;
 
 class SeamCarver {
 public:
-  enum DIMENSION { HORIZONTAL, VERTICAL };
-  enum ENERGY { GRADIENT, DUALGRADIENT };
+  enum Dimension { Horizontal, Vertical };
+  enum Energy { Gradient, DualGradient };
 
-  SeamCarver(Mat im, DIMENSION dim, ENERGY e)
-      : im{std::move(im)}, dimension{dim}, energyFunction{e} {}
-  explicit SeamCarver(Mat im) : im{std::move(im)} {}
+  SeamCarver(Mat im, Dimension dim, Energy e)
+      : im_{std::move(im)}, dimension_{dim}, energyFunction_{e} {}
+  explicit SeamCarver(Mat im) : im_{std::move(im)} {}
 
   void reduce(int n);
   void writeImage(const string& path);
   void showImage();
 
 private:
-  cv::Mat im;
-  DIMENSION dimension = VERTICAL;
-  ENERGY energyFunction = GRADIENT;
+  cv::Mat im_;
+  Dimension dimension_ = Vertical;
+  Energy energyFunction_ = Gradient;
   Mat createEnergyMap();
   Mat createAccumulativeEnergyMap(Mat energy);
   vector<int> findOptimalSeam(const Mat& accuEnergy);

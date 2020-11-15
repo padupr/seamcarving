@@ -42,12 +42,12 @@ inline int dualGradientEnergy(const Mat &im, int y, int x) {
 }
 
 Mat SeamCarver::createGradientEnergyMap() {
-  int width = im.cols;
-  int height = im.rows;
-  Mat energy = Mat(im.size(), CV_16U);
+  int width = im_.cols;
+  int height = im_.rows;
+  Mat energy = Mat(im_.size(), CV_16U);
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      energy.at<ushort>(y, x) = gradientEnergy(im, y, x);
+      energy.at<ushort>(y, x) = gradientEnergy(im_, y, x);
     }
   }
 
@@ -57,12 +57,12 @@ Mat SeamCarver::createGradientEnergyMap() {
 }
 
 Mat SeamCarver::createDualGradientEnergyMap() {
-  int width = im.cols;
-  int height = im.rows;
-  Mat energy = Mat(im.size(), CV_16U);
+  int width = im_.cols;
+  int height = im_.rows;
+  Mat energy = Mat(im_.size(), CV_16U);
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      energy.at<ushort>(y, x) = dualGradientEnergy(im, y, x);
+      energy.at<ushort>(y, x) = dualGradientEnergy(im_, y, x);
     }
   }
 
@@ -72,10 +72,10 @@ Mat SeamCarver::createDualGradientEnergyMap() {
 }
 
 Mat SeamCarver::createEnergyMap() {
-  switch (energyFunction) {
-  case ENERGY::GRADIENT:
+  switch (energyFunction_) {
+  case Energy::Gradient:
     return createGradientEnergyMap();
-  case ENERGY::DUALGRADIENT:
+  case Energy::DualGradient:
     return createDualGradientEnergyMap();
   default:
     abort();
@@ -83,42 +83,42 @@ Mat SeamCarver::createEnergyMap() {
 }
 
 Mat SeamCarver::createAccumulativeEnergyMap(Mat energy) {
-  Mat cumul = Mat::zeros(im.size(), CV_32S);
+  Mat accu = Mat::zeros(im_.size(), CV_32S);
   // copy initial value
-  if (dimension == DIMENSION::VERTICAL) {
-    energy.row(0).copyTo(cumul.row(0));
+  if (dimension_ == Dimension::Vertical) {
+    energy.row(0).copyTo(accu.row(0));
   } else {
-    energy.col(0).copyTo(cumul.col(0));
+    energy.col(0).copyTo(accu.col(0));
   }
 
   unsigned int a, b, c;
-  if (dimension == DIMENSION::VERTICAL) {
+  if (dimension_ == Dimension::Vertical) {
     // for each pixel least energetic pixel of the 3 above is added
-    for (int y = 1; y < im.rows; ++y) {
-      for (int x = 0; x < im.cols; ++x) {
-        a = cumul.at<unsigned int>(y - 1, max(x - 1, 0));
-        b = cumul.at<unsigned int>(y - 1, x);
-        c = cumul.at<unsigned int>(y - 1, min(x + 1, im.cols - 1));
-        cumul.at<unsigned int>(y, x) = energy.at<uchar>(y, x) + min(a, min(b, c));
+    for (int y = 1; y < im_.rows; ++y) {
+      for (int x = 0; x < im_.cols; ++x) {
+        a = accu.at<unsigned int>(y - 1, max(x - 1, 0));
+        b = accu.at<unsigned int>(y - 1, x);
+        c = accu.at<unsigned int>(y - 1, min(x + 1, im_.cols - 1));
+        accu.at<unsigned int>(y, x) = energy.at<uchar>(y, x) + min(a, min(b, c));
       }
     }
   } else {
-    for (int x = 1; x < im.cols; ++x) {
-      for (int y = 0; y < im.rows; ++y) {
-        a = cumul.at<int>(max(y - 1, 0), x - 1);
-        b = cumul.at<int>(y, x - 1);
-        c = cumul.at<int>(min(y + 1, im.rows - 1), x - 1);
-        cumul.at<int>(y, x) = energy.at<int>(y, x) + min(a, min(b, c));
+    for (int x = 1; x < im_.cols; ++x) {
+      for (int y = 0; y < im_.rows; ++y) {
+        a = accu.at<int>(max(y - 1, 0), x - 1);
+        b = accu.at<int>(y, x - 1);
+        c = accu.at<int>(min(y + 1, im_.rows - 1), x - 1);
+        accu.at<int>(y, x) = energy.at<int>(y, x) + min(a, min(b, c));
       }
     }
   }
-  return cumul;
+  return accu;
 }
 
 vector<int> SeamCarver::findOptimalSeam(const Mat &AccuEnergy) {
   vector<int> seam;
   int a, b, c;
-  if (dimension == DIMENSION::VERTICAL) {
+  if (dimension_ == Dimension::Vertical) {
     int rows = AccuEnergy.rows;
     seam = vector<int>(rows);
 
@@ -153,7 +153,7 @@ vector<int> SeamCarver::findOptimalSeam(const Mat &AccuEnergy) {
     for (int x = cols - 2; x >= 0; --x) {
       a = AccuEnergy.at<int>(max(current - 1, 0), x + 1);
       b = AccuEnergy.at<int>(current, x + 1);
-      c = AccuEnergy.at<int>(min(current + 1, im.rows - 1), x + 1);
+      c = AccuEnergy.at<int>(min(current + 1, im_.rows - 1), x + 1);
       if (a < b && a < c) {
         current -= 1;
       } else if (b < a && b < c) {
@@ -169,20 +169,20 @@ vector<int> SeamCarver::findOptimalSeam(const Mat &AccuEnergy) {
 }
 
 void SeamCarver::carveSeam(vector<int> seam) {
-  if (dimension == DIMENSION::VERTICAL) {
-    for (int y = 0; y < im.rows; ++y) {
-      for (int x = seam[y]; x < im.cols - 1; ++x) {
-        im.at<Vec3b>(y, x) = im.at<Vec3b>(y, x + 1);
+  if (dimension_ == Dimension::Vertical) {
+    for (int y = 0; y < im_.rows; ++y) {
+      for (int x = seam[y]; x < im_.cols - 1; ++x) {
+        im_.at<Vec3b>(y, x) = im_.at<Vec3b>(y, x + 1);
       }
     }
-    im = im.colRange(0, im.cols - 1);
+    im_ = im_.colRange(0, im_.cols - 1);
   } else {
-    for (int x = 0; x < im.cols; ++x) {
-      for (int y = seam[x]; y < im.cols - 1; ++y) {
-        im.at<Vec3b>(y, x) = im.at<Vec3b>(y + 1, x);
+    for (int x = 0; x < im_.cols; ++x) {
+      for (int y = seam[x]; y < im_.cols - 1; ++y) {
+        im_.at<Vec3b>(y, x) = im_.at<Vec3b>(y + 1, x);
       }
     }
-    im = im.rowRange(0, im.rows - 1);
+    im_ = im_.rowRange(0, im_.rows - 1);
   }
 }
 
@@ -196,11 +196,11 @@ void SeamCarver::reduce(int n) {
 }
 
 void SeamCarver::writeImage(const string& path) {
-  imwrite(path, im);
+  imwrite(path, im_);
 }
 
 void SeamCarver::showImage() {
   cv::namedWindow("image", WINDOW_AUTOSIZE);
-  imshow("image", im);
+  imshow("image", im_);
   waitKey(0);
 }
