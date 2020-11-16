@@ -71,12 +71,31 @@ Mat SeamCarver::createDualGradientEnergyMap() {
   return scaled;
 }
 
+Mat SeamCarver::createSobelEnergyMap() {
+  Mat grey;
+  cvtColor(im_, grey, COLOR_BGR2GRAY);
+
+  Mat sobelX, sobelY;
+  Sobel(grey, sobelX, CV_16S, 1, 0, 3);
+  Sobel(grey, sobelY, CV_16S, 0, 1, 3);
+
+  Mat scaledX, scaledY;
+  convertScaleAbs(sobelX, scaledX);
+  convertScaleAbs(sobelY, scaledY);
+
+  Mat energy;
+  addWeighted(scaledX, 0.5, scaledY, 0.5, 0, energy);
+  return energy;
+}
+
 Mat SeamCarver::createEnergyMap() {
   switch (energyFunction_) {
   case Energy::Gradient:
     return createGradientEnergyMap();
   case Energy::DualGradient:
     return createDualGradientEnergyMap();
+  case Energy::Sobel3:
+    return createSobelEnergyMap();
   default:
     abort();
   }

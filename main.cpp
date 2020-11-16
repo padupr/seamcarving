@@ -8,10 +8,11 @@
 using namespace std;
 using namespace cv;
 
-enum class Energy { gradient, dualGradient };
+enum class Energy { gradient, dualGradient, sobel };
 static constexpr char gradientStr[] = "gradient";
-
 static constexpr char dualGradientStr[] = "dualGradient";
+static constexpr char sobelStr[] = "sobel";
+
 void printArgparse(bool vertical, int seams, const Energy &energy);
 
 int main(int argc, char *argv[]) {
@@ -47,6 +48,8 @@ int main(int argc, char *argv[]) {
         energy = Energy::gradient;
       } else if (strcmp(optarg, dualGradientStr) == 0) {
         energy = Energy::dualGradient;
+      } else if (strcmp(optarg, sobelStr) == 0) {
+        energy = Energy::sobel;
       } else {
         std::cerr << "Unknown energy option " << optarg << ". Try "
                   << std::endl;
@@ -66,10 +69,23 @@ int main(int argc, char *argv[]) {
 
   for (index = optind; index < argc; index++) {
     if (logging) {
+      SeamCarver::Dimension dim = vertical ? SeamCarver::Dimension::Vertical : SeamCarver::Dimension::Horizontal;
+      SeamCarver::Energy en;
+      switch (energy) {
+          case Energy::gradient:
+              en = SeamCarver::Energy::Gradient;
+              break;
+          case Energy::dualGradient:
+              en = SeamCarver::Energy::DualGradient;
+              break;
+          case Energy::sobel:
+              en = SeamCarver::Energy::Sobel3;
+              break;
+      }
       char *path = argv[index];
       std::cout << "Processing " << path << std::endl;
       Mat im = imread(path);
-      SeamCarver seamCarver(im);
+      SeamCarver seamCarver(im, dim, en);
       seamCarver.reduce(seams);
       seamCarver.showImage();
       seamCarver.writeImage(format("%s-out-%d.png", path, seams));

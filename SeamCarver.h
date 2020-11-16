@@ -10,7 +10,7 @@ using namespace cv;
 class SeamCarver {
 public:
   enum Dimension { Horizontal, Vertical };
-  enum Energy { Gradient, DualGradient };
+  enum Energy { Gradient, DualGradient, Sobel3 };
 
   SeamCarver(Mat im, Dimension dim, Energy e)
       : im_{std::move(im)}, dimension_{dim}, energyFunction_{e} {}
@@ -30,6 +30,7 @@ private:
   void carveSeam(vector<int> seam);
   Mat createGradientEnergyMap();
   Mat createDualGradientEnergyMap();
+  Mat createSobelEnergyMap();
 };
 
 #endif // SEAMCARVING_SEAMCARVING_H
