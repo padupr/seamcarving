@@ -14,6 +14,7 @@ static constexpr char dualGradientStr[] = "dualGradient";
 static constexpr char sobelStr[] = "sobel";
 
 void printArgparse(bool vertical, int seams, const Energy &energy);
+void printUsage();
 
 SeamCarver::Energy convertEnergy(const Energy &energy);
 int main(int argc, char *argv[]) {
@@ -23,6 +24,7 @@ int main(int argc, char *argv[]) {
   int seams = -1;
   Energy energy = Energy::gradient;
 
+  opterr = 0;
   int c;
   while ((c = getopt(argc, argv, "l:hvs:e:")) != -1) {
     switch (c) {
@@ -61,7 +63,8 @@ int main(int argc, char *argv[]) {
       }
       break;
     case '?':
-      std::cerr << "Unknown option -" << optopt << std::endl;
+      std::cout << "Unknown option -" << (char) optopt << std::endl;
+      printUsage();
     default:
       abort();
     }
@@ -138,4 +141,24 @@ void printArgparse(bool vertical, int seams, const Energy &energy) {
     cout << dualGradientStr;
   }
   cout << std::endl;
+}
+
+void printUsage() {
+  std::cout
+      << "Usage: seamcarving [OPTION]... [FILE]..." << std::endl
+      << "Options:" << std::endl
+      << "  -l level"
+      << "      Logging level. 0 off, 1 info, 2 verbose." << std::endl
+      << "  -h"
+      << "            Reduce horizontal." << std::endl
+      << "  -v"
+      << "            Reduce vertical." << std::endl
+      << "  -s seams"
+      << "      Number of seams to remove." << std::endl
+      << "  -e algorithm"
+      << "  Select energy calculation from gradient, dualGradient, and sobel."
+      << std::endl
+      << std::endl
+      << "This tool implements seam carving for content-aware image downsizing."
+      << std::endl;
 }
