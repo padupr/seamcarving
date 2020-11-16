@@ -16,7 +16,7 @@ public:
   explicit SeamCarver(Mat im) : im_{std::move(im)} {}
 
   void reduce(int n);
-  void writeImage(const string& path);
+  bool writeImage(const string& path);
   void showImage();
 
 private:

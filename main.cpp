@@ -17,15 +17,13 @@ void printArgparse(bool vertical, int seams, const Energy &energy);
 
 SeamCarver::Energy convertEnergy(const Energy &energy);
 int main(int argc, char *argv[]) {
-  int c;
-  int index;
-
   // options and defaults
   bool logging = false;
   bool vertical = true;
   int seams = -1;
   Energy energy = Energy::gradient;
 
+  int c;
   while ((c = getopt(argc, argv, "lhvs:e:")) != -1) {
     switch (c) {
     case 'l':
@@ -73,13 +71,14 @@ int main(int argc, char *argv[]) {
     printArgparse(vertical, seams, energy);
   }
 
-  for (index = optind; index < argc; index++) {
+  for (int index = optind; index < argc; index++) {
     if (logging) {
       SeamCarver::Dimension dim = vertical ? SeamCarver::Dimension::Vertical
                                            : SeamCarver::Dimension::Horizontal;
       SeamCarver::Energy en = convertEnergy(energy);
       char *path = argv[index];
       std::cout << "Processing " << path << std::endl;
+
       Mat im = imread(path);
       if (vertical && im.rows <= seams) {
         std::cerr << "Seams must be less than image width." << std::endl;
@@ -89,10 +88,16 @@ int main(int argc, char *argv[]) {
         std::cerr << "Seams must be less than image height." << std::endl;
         abort();
       }
+
       SeamCarver seamCarver(im, dim, en);
       seamCarver.reduce(seams);
       seamCarver.showImage();
-      seamCarver.writeImage(format("%s-out-%d.png", path, seams));
+      string outPath = format("%s-out-%d.png", path, seams);
+      if (seamCarver.writeImage(outPath)) {
+        std::cout << "Written to" << outPath << std::endl;
+      } else {
+        std::cerr << "Could not write to" << outPath << std::endl;
+      }
     }
   }
 

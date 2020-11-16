@@ -214,8 +214,8 @@ void SeamCarver::reduce(int n) {
   }
 }
 
-void SeamCarver::writeImage(const string& path) {
-  imwrite(path, im_);
+bool SeamCarver::writeImage(const string& path) {
+  return imwrite(path, im_);
 }
 
 void SeamCarver::showImage() {
