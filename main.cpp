@@ -63,6 +63,11 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  if (seams <= 0) {
+    std::cerr << "The number of seams needs to be larger than 0" << std::endl;
+    abort();
+  }
+
   if (logging) {
     printArgparse(vertical, seams, energy);
   }
@@ -85,6 +90,14 @@ int main(int argc, char *argv[]) {
       char *path = argv[index];
       std::cout << "Processing " << path << std::endl;
       Mat im = imread(path);
+      if (vertical && im.rows <= seams) {
+        std::cerr << "Seams must be less than image width." << std::endl;
+        abort();
+      }
+      if (!vertical && im.cols <= seams) {
+        std::cerr << "Seams must be less than image height." << std::endl;
+        abort();
+      }
       SeamCarver seamCarver(im, dim, en);
       seamCarver.reduce(seams);
       seamCarver.showImage();
