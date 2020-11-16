@@ -2,7 +2,6 @@
 #define SEAMCARVING_SEAMCARVING_H
 
 #include <opencv2/opencv.hpp>
-#include <utility>
 
 using namespace std;
 using namespace cv;
