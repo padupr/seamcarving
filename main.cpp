@@ -78,16 +78,18 @@ int main(int argc, char *argv[]) {
     }
 
     for (int index = optind; index < argc; index++) {
-        SeamCarver::Dimension dim = vertical
-                                        ? SeamCarver::Dimension::Vertical
-                                        : SeamCarver::Dimension::Horizontal;
-        SeamCarver::Energy en = convertEnergy(energy);
         char *path = argv[index];
-
         if (logging > 0) {
             std::cout << "Processing " << path << std::endl;
         }
 
+        // convert args for SeamCarver constructor
+        SeamCarver::Dimension dim = vertical
+                                        ? SeamCarver::Dimension::Vertical
+                                        : SeamCarver::Dimension::Horizontal;
+        SeamCarver::Energy en = convertEnergy(energy);
+
+        // read image and check size against seams
         Mat im = imread(path);
         if (vertical && im.rows <= seams) {
             std::cerr << "Seams must be less than image width." << std::endl;
@@ -98,6 +100,7 @@ int main(int argc, char *argv[]) {
             return 1;
         }
 
+        // seam carving
         SeamCarver seamCarver(im, dim, en);
         seamCarver.setLogLevel(logging);
         seamCarver.reduce(seams);
@@ -109,7 +112,6 @@ int main(int argc, char *argv[]) {
             std::cerr << "Could not write to" << outPath << std::endl;
         }
     }
-
     return 0;
 }
 

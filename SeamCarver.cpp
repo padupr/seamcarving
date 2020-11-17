@@ -44,14 +44,17 @@ Mat SeamCarver::createSobelEnergyMap() {
     Mat grey;
     cvtColor(im_, grey, COLOR_BGR2GRAY);
 
+    // create gradients
     Mat sobelX, sobelY;
     Sobel(grey, sobelX, CV_16S, 1, 0, 3);
     Sobel(grey, sobelY, CV_16S, 0, 1, 3);
 
+    // scale 8 bit
     Mat scaledX, scaledY;
     convertScaleAbs(sobelX, scaledX);
     convertScaleAbs(sobelY, scaledY);
 
+    // combine
     Mat energy;
     addWeighted(scaledX, 0.5, scaledY, 0.5, 0, energy);
     return energy;
@@ -85,7 +88,7 @@ Mat SeamCarver::createAccumulativeEnergyMap(Mat energy) {
 
     unsigned int a, b, c;
     if (dimension_ == Dimension::Vertical) {
-        // for each pixel least energetic pixel of the 3 above is added
+        // for each pixel: smallest energetic pixel of the 3 above is added
         for (int y = 1; y < im_.rows; ++y) {
             for (int x = 0; x < im_.cols; ++x) {
                 a = accu.at<unsigned int>(y - 1, max(x - 1, 0));
@@ -118,6 +121,7 @@ vector<int> SeamCarver::findOptimalSeam(const Mat &AccuEnergy) {
         int rows = AccuEnergy.rows;
         seam = vector<int>(rows);
 
+        // find smallest energy in the last row
         Mat last_row = AccuEnergy.row(rows - 1);
         int current = min_element(last_row.begin<int>(), last_row.end<int>()) -
                       last_row.begin<int>();
@@ -135,6 +139,7 @@ vector<int> SeamCarver::findOptimalSeam(const Mat &AccuEnergy) {
             } else {
                 current += 1;
             }
+            // add smallest of 3 pixels in the row above to seam
             current = max(min(current, AccuEnergy.cols - 1), 0);
             seam[y] = current;
         }
@@ -177,11 +182,13 @@ void SeamCarver::carveSeam(vector<int> seam) {
         cout << "Carving Seam" << endl;
     }
     if (dimension_ == Dimension::Vertical) {
+        // shift all pixels on the right
         for (int y = 0; y < im_.rows; ++y) {
             for (int x = seam[y]; x < im_.cols - 1; ++x) {
                 im_.at<Vec3b>(y, x) = im_.at<Vec3b>(y, x + 1);
             }
         }
+        // reduce image size by one
         im_ = im_.colRange(0, im_.cols - 1);
     } else {
         for (int x = 0; x < im_.cols; ++x) {
