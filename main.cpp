@@ -8,9 +8,8 @@
 using namespace std;
 using namespace cv;
 
-enum class Energy { gradient, dualGradient, sobel };
+enum class Energy { gradient, sobel };
 static constexpr char gradientStr[] = "gradient";
-static constexpr char dualGradientStr[] = "dualGradient";
 static constexpr char sobelStr[] = "sobel";
 
 void printArgparse(bool vertical, int seams, const Energy &energy);
@@ -52,8 +51,6 @@ int main(int argc, char *argv[]) {
     case 'e':
       if (strcmp(optarg, gradientStr) == 0) {
         energy = Energy::gradient;
-      } else if (strcmp(optarg, dualGradientStr) == 0) {
-        energy = Energy::dualGradient;
       } else if (strcmp(optarg, sobelStr) == 0) {
         energy = Energy::sobel;
       } else {
@@ -120,9 +117,6 @@ SeamCarver::Energy convertEnergy(const Energy &energy) {
   case Energy::gradient:
     en = SeamCarver::Gradient;
     break;
-  case Energy::dualGradient:
-    en = SeamCarver::DualGradient;
-    break;
   case Energy::sobel:
     en = SeamCarver::Sobel3;
     break;
@@ -138,8 +132,8 @@ void printArgparse(bool vertical, int seams, const Energy &energy) {
        << "\tenergy: ";
   if (energy == Energy::gradient) {
     cout << gradientStr;
-  } else if (energy == Energy::dualGradient) {
-    cout << dualGradientStr;
+  } else if (energy == Energy::sobel) {
+    cout << sobelStr;
   }
   cout << std::endl;
 }

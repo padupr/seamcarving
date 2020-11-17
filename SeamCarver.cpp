@@ -25,22 +25,6 @@ inline int gradientEnergy(const Mat &im, int y, int x) {
   return energy;
 }
 
-inline int dualGradientEnergy(const Mat &im, int y, int x) {
-  const auto &pixel = im.at<Vec3b>(y, x);
-  Vec3b other;
-
-  int energy = 0;
-  other = im.at<Vec3b>(y, max(x - 1, 0));
-  energy += calculatePixelDistance(pixel, other) / 2;
-  other = im.at<Vec3b>(max(y - 1, 0), x);
-  energy += calculatePixelDistance(pixel, other) / 2;
-  other = im.at<Vec3b>(y, min(x + 1, im.cols - 1));
-  energy += calculatePixelDistance(pixel, other) / 2;
-  other = im.at<Vec3b>(min(y + 1, im.rows - 1), x);
-  energy += calculatePixelDistance(pixel, other) / 2;
-  return energy;
-}
-
 Mat SeamCarver::createGradientEnergyMap() {
   int width = im_.cols;
   int height = im_.rows;
@@ -48,21 +32,6 @@ Mat SeamCarver::createGradientEnergyMap() {
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       energy.at<ushort>(y, x) = gradientEnergy(im_, y, x);
-    }
-  }
-
-  Mat scaled;
-  convertScaleAbs(energy, scaled);
-  return scaled;
-}
-
-Mat SeamCarver::createDualGradientEnergyMap() {
-  int width = im_.cols;
-  int height = im_.rows;
-  Mat energy = Mat(im_.size(), CV_16U);
-  for (int y = 0; y < height; ++y) {
-    for (int x = 0; x < width; ++x) {
-      energy.at<ushort>(y, x) = dualGradientEnergy(im_, y, x);
     }
   }
 
@@ -95,8 +64,6 @@ Mat SeamCarver::createEnergyMap() {
   switch (energyFunction_) {
   case Energy::Gradient:
     return createGradientEnergyMap();
-  case Energy::DualGradient:
-    return createDualGradientEnergyMap();
   case Energy::Sobel3:
     return createSobelEnergyMap();
   default:
