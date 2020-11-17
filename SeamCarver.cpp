@@ -89,6 +89,9 @@ Mat SeamCarver::createSobelEnergyMap() {
 }
 
 Mat SeamCarver::createEnergyMap() {
+  if (logging > 0) {
+    cout << "Creating energy map" << endl;
+  }
   switch (energyFunction_) {
   case Energy::Gradient:
     return createGradientEnergyMap();
@@ -102,6 +105,9 @@ Mat SeamCarver::createEnergyMap() {
 }
 
 Mat SeamCarver::createAccumulativeEnergyMap(Mat energy) {
+  if (logging > 0) {
+    cout << "Creating accumulative energy map" << endl;
+  }
   Mat accu = Mat::zeros(im_.size(), CV_32S);
   // copy initial value
   if (dimension_ == Dimension::Vertical) {
@@ -135,6 +141,9 @@ Mat SeamCarver::createAccumulativeEnergyMap(Mat energy) {
 }
 
 vector<int> SeamCarver::findOptimalSeam(const Mat &AccuEnergy) {
+  if (logging > 0) {
+    cout << "Searching Seam" << endl;
+  }
   vector<int> seam;
   int a, b, c;
   if (dimension_ == Dimension::Vertical) {
@@ -184,10 +193,20 @@ vector<int> SeamCarver::findOptimalSeam(const Mat &AccuEnergy) {
       seam[x] = current;
     }
   }
+  if (logging > 1) {
+    cout << "Chose seam ";
+    for (int i : seam) {
+      cout << i << ' ';
+    }
+    cout << endl;
+  }
   return seam;
 }
 
 void SeamCarver::carveSeam(vector<int> seam) {
+  if (logging > 0) {
+    cout << "Carving Seam" << endl;
+  }
   if (dimension_ == Dimension::Vertical) {
     for (int y = 0; y < im_.rows; ++y) {
       for (int x = seam[y]; x < im_.cols - 1; ++x) {
@@ -207,6 +226,9 @@ void SeamCarver::carveSeam(vector<int> seam) {
 
 void SeamCarver::reduce(int n) {
   for (int i = 0; i < n; ++i) {
+    if (logging > 0) {
+      cout << format("----- Carving seam #%d -----", i+1) << endl;
+    }
     Mat energy = createEnergyMap();
     Mat accuEnergyMap = createAccumulativeEnergyMap(energy);
     vector<int> seam = findOptimalSeam(accuEnergyMap);
@@ -222,4 +244,8 @@ void SeamCarver::showImage() {
   cv::namedWindow("image", WINDOW_AUTOSIZE);
   imshow("image", im_);
   waitKey(0);
+}
+
+void SeamCarver::setLogLevel(int level) {
+  logging = level;
 }

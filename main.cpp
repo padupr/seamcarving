@@ -100,6 +100,7 @@ int main(int argc, char *argv[]) {
     }
 
     SeamCarver seamCarver(im, dim, en);
+    seamCarver.setLogLevel(logging);
     seamCarver.reduce(seams);
     seamCarver.showImage();
     string outPath = format("%s-out-%d.png", path, seams);
