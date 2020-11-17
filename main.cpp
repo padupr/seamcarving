@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
       if (logging < 0 || logging >= 3) {
         std::cerr << "Logging (-l) must be set to value 0, 1, or 2."
                   << std::endl;
-        abort();
+        return 1;
       }
       break;
     case 'h':
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
       seams = std::stoi(optarg);
       if (seams < 0) {
         std::cerr << "-s requires positive integers." << std::endl;
-        abort();
+        return 1;
       }
       break;
     case 'e':
@@ -59,20 +59,20 @@ int main(int argc, char *argv[]) {
       } else {
         std::cerr << "Unknown energy option " << optarg << ". Try "
                   << std::endl;
-        abort();
+        return 1;
       }
       break;
     case '?':
       std::cout << "Unknown option -" << (char) optopt << std::endl;
       printUsage();
     default:
-      abort();
+      return 1;
     }
   }
 
   if (seams <= 0) {
     std::cerr << "The number of seams needs to be larger than 0" << std::endl;
-    abort();
+    return 1;
   }
 
   if (logging > 1) {
@@ -92,11 +92,11 @@ int main(int argc, char *argv[]) {
     Mat im = imread(path);
     if (vertical && im.rows <= seams) {
       std::cerr << "Seams must be less than image width." << std::endl;
-      abort();
+      return 1;
     }
     if (!vertical && im.cols <= seams) {
       std::cerr << "Seams must be less than image height." << std::endl;
-      abort();
+      return 1;
     }
 
     SeamCarver seamCarver(im, dim, en);
